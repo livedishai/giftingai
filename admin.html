@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Gift Center Admin</title>
+    <!-- Tailwind CSS for Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- QRCode library for instant QR rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { background-color: #FFFDF9; font-family: sans-serif; }
+    </style>
+</head>
+<body class="p-6">
+
+    <!-- HEADER -->
+    <header class="flex justify-between items-center border-b border-orange-100 pb-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-orange-600 tracking-wide uppercase">Progress Gift Center</h1>
+            <p class="text-xs text-gray-500 font-semibold tracking-wider uppercase">Admin Dashboard</p>
+        </div>
+        <div class="flex space-x-6 text-center font-bold text-sm text-orange-700">
+            <div><span id="orderCount" class="block text-xl">0</span> ORDERS</div>
+            <div><span class="block text-xl text-orange-400">0</span> SCANS</div>
+        </div>
+    </header>
+
+    <!-- MAIN SPLIT LAYOUT -->
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- LEFT PANEL: FORM -->
+        <section class="lg:col-span-5 bg-orange-50/30 border border-orange-100 rounded-2xl p-6">
+            
+            <!-- Instructions Box -->
+            <div class="bg-amber-50/50 border border-amber-200 rounded-xl p-4 mb-6 text-xs text-amber-900 leading-relaxed">
+                <p class="font-bold mb-1">📄 How to add each order</p>
+                <ol class="list-decimal list-inside space-y-1 text-amber-800">
+                    <li>Go to <span class="underline cursor-pointer font-semibold">MindAR Compiler</span> → upload frame photo → download .mind file</li>
+                    <li>Fill form below → select frame photo + .mind file + video → click Add Order</li>
+                    <li>QR generated → screenshot → send to customer via WhatsApp</li>
+                </ol>
+            </div>
+
+            <h2 class="text-lg font-bold text-orange-700 border-l-4 border-orange-500 pl-2 mb-4">Add New Order</h2>
+            
+            <form id="orderForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-orange-900 uppercase tracking-wider mb-1">Customer Name</label>
+                    <input type="text" id="custName" required placeholder="e.g. Priya Sharma" class="w-full px-3 py-2 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-orange-900 uppercase tracking-wider mb-1">Phone Number</label>
+                    <input type="tel" id="custPhone" required placeholder="e.g. 9876543210" class="w-full px-3 py-2 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-orange-900 uppercase tracking-wider mb-1">Order ID</label>
+                    <input type="text" id="orderId" readonly class="w-full px-3 py-2 border border-orange-200 rounded-lg bg-orange-50/50 text-gray-600 font-mono text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-orange-900 uppercase tracking-wider mb-1">Frame Photo (JPG/PNG)</label>
+                    <input type="file" id="filePhoto" required accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-orange-900 uppercase tracking-wider mb-1">Mind File (AR Tracker)</label>
+                    <input type="file" id="fileMind" required accept=".mind" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-orange-900 uppercase tracking-wider mb-1">Customer Video (MP4)</label>
+                    <input type="file" id="fileVideo" required accept="video/mp4" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200">
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full py-3 mt-2 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-xl shadow-md transition-all uppercase tracking-wider">
+                    ✨ Add Order & Generate QR
+                </button>
+            </form>
+        </section>
+
+        <!-- RIGHT PANEL: ALL ORDERS TABLE -->
+        <section class="lg:col-span-7 border border-gray-100 bg-white rounded-2xl p-6 shadow-sm">
+            <h2 class="text-lg font-bold text-orange-700 border-l-4 border-orange-500 pl-2 mb-4">All Orders</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-orange-100 text-orange-900 uppercase tracking-wider font-bold">
+                            <th class="py-3 px-2">Customer</th>
+                            <th class="py-3 px-2">Order</th>
+                            <th class="py-3 px-2 text-center">Video</th>
+                            <th class="py-3 px-2 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody" class="divide-y divide-gray-100 text-gray-700">
+                        <!-- Dynamic rows will inject here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- POPUP MODAL FOR QR CODE -->
+    <div id="qrModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center shadow-2xl relative">
+            <button onclick="closeModal()" class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 font-bold text-lg">&times;</button>
+            <h3 class="font-bold text-orange-700 mb-2" id="modalTitle">Scan QR Code</h3>
+            <div id="qrcode" class="flex justify-center p-4 bg-white border border-gray-100 rounded-xl mb-4"></div>
+            <p class="text-xs text-gray-500 italic">Take a screenshot and share via WhatsApp</p>
+        </div>
+    </div>
+
+    <!-- MAIN APPLICATION SCRIPT -->
+    <script>
+        // CONFIGURATION: Paste your Web App Deployment URL here!
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw77-SyxbhRLta81uazD91CHnJT98jkQWQgnEwfbEh9LfAFl0Ex7fu3hvg6ly4GnMvl/exec";
+        const AR_CLIENT_BASE_URL = "http://127.0.0.1:5500/index.html";
+
+        let localOrders = JSON.parse(localStorage.getItem('ar_orders')) || [];
+
+        // Generate custom order ID on load
+        function generateOrderID() {
+            const dateStr = new Date().toISOString().slice(2,10).replace(/-/g,"");
+            const randNum = Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('orderId').value = `ORD${dateStr}${randNum}`;
+        }
+
+        // Convert files to base64 format helper
+        const fileToBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+        });
+
+        // Form submission pipeline
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = "⏳ Uploading to Google Drive...";
+
+            try {
+                const orderId = document.getElementById('orderId').value;
+                const customerName = document.getElementById('custName').value;
+                const phoneNumber = document.getElementById('custPhone').value;
+
+                const photoFile = document.getElementById('filePhoto').files[0];
+                const mindFile = document.getElementById('fileMind').files[0];
+                const videoFile = document.getElementById('fileVideo').files[0];
+
+                const payload = {
+                    customerName,
+                    phoneNumber,
+                    orderId,
+                    photoName: photoFile.name,
+                    photoData: await fileToBase64(photoFile),
+                    mindName: mindFile.name,
+                    mindData: await fileToBase64(mindFile),
+                    videoName: videoFile.name,
+                    videoData: await fileToBase64(videoFile)
+                };
+
+                // Post directly to Apps Script bridge
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // standard workaround for apps script redirects
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // Since 'no-cors' doesn't return text bodies, assume success if no execution error catches
+                const newOrder = { customerName, phoneNumber, orderId };
+                localOrders.unshift(newOrder);
+                localStorage.setItem('ar_orders', JSON.stringify(localOrders));
+                
+                renderTable();
+                document.getElementById('orderForm').reset();
+                generateOrderID();
+                showQR(orderId);
+
+            } catch (err) {
+                alert("Submission workflow error: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "✨ Add Order & Generate QR";
+            }
+        });
+
+        function renderTable() {
+            const tbody = document.getElementById('ordersTableBody');
+            tbody.innerHTML = '';
+            document.getElementById('orderCount').innerText = localOrders.length;
+
+            localOrders.forEach((order, index) => {
+                const row = document.createElement('tr');
+                row.className = "hover:bg-orange-50/20";
+                row.innerHTML = `
+                    <td class="py-3 px-2 font-semibold text-gray-900">${order.customerName}<br><span class="text-gray-400 font-normal">${order.phoneNumber}</span></td>
+                    <td class="py-3 px-2 font-mono text-gray-500">${order.orderId}</td>
+                    <td class="py-3 px-2 text-center text-emerald-500 font-bold">✓</td>
+                    <td class="py-3 px-2 text-center space-x-1 whitespace-nowrap">
+                        <button onclick="showQR('${order.orderId}')" class="px-2 py-1 bg-orange-100 text-orange-700 font-bold rounded hover:bg-orange-200">QR</button>
+                        <button onclick="deleteOrder(${index})" class="px-2 py-1 bg-red-50 text-red-600 font-bold rounded hover:bg-red-100">Del</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function showQR(orderId) {
+            document.getElementById('qrcode').innerHTML = "";
+            document.getElementById('modalTitle').innerText = `QR Code for ${orderId}`;
+            
+            // Constructs target customer WebAR tracking Link
+            const scanUrl = `${AR_CLIENT_BASE_URL}?order=${orderId}`;
+            
+            new QRCode(document.getElementById("qrcode"), {
+                text: scanUrl,
+                width: 180,
+                height: 180
+            });
+            document.getElementById('qrModal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('qrModal').classList.add('hidden'); }
+        function deleteOrder(index) {
+            if(confirm("Delete tracking link from dashboard?")) {
+                localOrders.splice(index, 1);
+                localStorage.setItem('ar_orders', JSON.stringify(localOrders));
+                renderTable();
+            }
+        }
+
+        // Initialize state
+        generateOrderID();
+        renderTable();
+    </script>
+</body>
+</html>
