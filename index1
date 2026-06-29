@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Progress Gift Center Admin</title>
+    <!-- Tailwind CSS for Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- QRCode library for instant QR rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body { background-color: #FFFDF9; font-family: sans-serif; }
@@ -12,6 +14,7 @@
 </head>
 <body class="p-6">
 
+    <!-- HEADER -->
     <header class="flex justify-between items-center border-b border-orange-100 pb-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-orange-600 tracking-wide uppercase">Progress Gift Center</h1>
@@ -23,10 +26,13 @@
         </div>
     </header>
 
+    <!-- MAIN SPLIT LAYOUT -->
     <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
+        <!-- LEFT PANEL: FORM -->
         <section class="lg:col-span-5 bg-orange-50/30 border border-orange-100 rounded-2xl p-6">
             
+            <!-- Instructions Box -->
             <div class="bg-amber-50/50 border border-amber-200 rounded-xl p-4 mb-6 text-xs text-amber-900 leading-relaxed">
                 <p class="font-bold mb-1">📄 How to add each order</p>
                 <ol class="list-decimal list-inside space-y-1 text-amber-800">
@@ -75,6 +81,7 @@
             </form>
         </section>
 
+        <!-- RIGHT PANEL: ALL ORDERS TABLE -->
         <section class="lg:col-span-7 border border-gray-100 bg-white rounded-2xl p-6 shadow-sm">
             <h2 class="text-lg font-bold text-orange-700 border-l-4 border-orange-500 pl-2 mb-4">All Orders</h2>
             
@@ -89,12 +96,14 @@
                         </tr>
                     </thead>
                     <tbody id="ordersTableBody" class="divide-y divide-gray-100 text-gray-700">
-                        </tbody>
+                        <!-- Dynamic rows will inject here -->
+                    </tbody>
                 </table>
             </div>
         </section>
     </main>
 
+    <!-- POPUP MODAL FOR QR CODE -->
     <div id="qrModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4">
         <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center shadow-2xl relative">
             <button onclick="closeModal()" class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 font-bold text-lg">&times;</button>
@@ -104,10 +113,11 @@
         </div>
     </div>
 
+    <!-- MAIN APPLICATION SCRIPT -->
     <script>
-        // CONFIGURATION MATCHED TO YOUR NEW DEPLOYMENT PATHS
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXkEqSHcB83SVUE76N4ALGRiYDDg2YhDtJyJBbTpfmgB321IYhgg_QBQGf7pYGBJlv/exec";
-        const AR_CLIENT_BASE_URL = "https://livedishai.github.io/giftingai/index.html";
+        // CONFIGURATION: Paste your Web App Deployment URL here!
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw77-SyxbhRLta81uazD91CHnJT98jkQWQgnEwfbEh9LfAFl0Ex7fu3hvg6ly4GnMvl/exec";
+        const AR_CLIENT_BASE_URL = "https://livedishai.github.io/GiftVault/";
 
         let localOrders = JSON.parse(localStorage.getItem('ar_orders')) || [];
 
@@ -157,11 +167,12 @@
                 // Post directly to Apps Script bridge
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors', 
+                    mode: 'no-cors', // standard workaround for apps script redirects
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
+                // Since 'no-cors' doesn't return text bodies, assume success if no execution error catches
                 const newOrder = { customerName, phoneNumber, orderId };
                 localOrders.unshift(newOrder);
                 localStorage.setItem('ar_orders', JSON.stringify(localOrders));
@@ -204,6 +215,7 @@
             document.getElementById('qrcode').innerHTML = "";
             document.getElementById('modalTitle').innerText = `QR Code for ${orderId}`;
             
+            // Constructs target customer WebAR tracking Link
             const scanUrl = `${AR_CLIENT_BASE_URL}?order=${orderId}`;
             
             new QRCode(document.getElementById("qrcode"), {
