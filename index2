@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Progress Gift Center - AR Experience</title>
     
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
         body { margin: 0; overflow: hidden; font-family: sans-serif; }
@@ -85,7 +85,7 @@
             document.getElementById('statusText').innerText = "Downloading AR Tracking Profiles...";
             const container = document.getElementById('sceneContainer');
             
-            // Adjusted tag semantics to perfectly line up with mind-ar v1.2.x requirements
+            // Built with tracking attributes allowing phone browser autoplay restrictions to clear safely
             container.innerHTML = `
                 <a-scene mindar-image="imageTargetSrc: ${mindUrl}; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;" 
                          embedded color-space="sRGB" renderer="colorManagement: true, sortObjects: true" 
