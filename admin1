@@ -24,9 +24,9 @@
     </header>
 
     <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
+        
         <section class="lg:col-span-5 bg-orange-50/30 border border-orange-100 rounded-2xl p-6">
-
+            
             <div class="bg-amber-50/50 border border-amber-200 rounded-xl p-4 mb-6 text-xs text-amber-900 leading-relaxed">
                 <p class="font-bold mb-1">📄 How to add each order</p>
                 <ol class="list-decimal list-inside space-y-1 text-amber-800">
@@ -37,7 +37,7 @@
             </div>
 
             <h2 class="text-lg font-bold text-orange-700 border-l-4 border-orange-500 pl-2 mb-4">Add New Order</h2>
-
+            
             <form id="orderForm" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-orange-900 uppercase tracking-wider mb-1">Customer Name</label>
@@ -77,7 +77,7 @@
 
         <section class="lg:col-span-7 border border-gray-100 bg-white rounded-2xl p-6 shadow-sm">
             <h2 class="text-lg font-bold text-orange-700 border-l-4 border-orange-500 pl-2 mb-4">All Orders</h2>
-
+            
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
@@ -154,46 +154,25 @@
                     videoData: await fileToBase64(videoFile)
                 };
 
-                // FIX: Content-Type 'text/plain' avoids a CORS preflight request.
-                // Apps Script doesn't respond to OPTIONS preflights, so a real
-                // 'application/json' content type silently blocks the request
-                // in some browsers, or forces you into 'no-cors' (which hides
-                // every error the server returns). Apps Script parses
-                // e.postData.contents as JSON regardless of the header, so this
-                // is safe and lets us actually read the server's response.
+                // Post directly to Apps Script bridge
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
-                if (!response.ok) {
-                    throw new Error(`Server returned HTTP ${response.status}`);
-                }
-
-                const result = await response.json();
-
-                // FIX: only treat this as success if the server actually says so.
-                // Previously (with no-cors) this check was impossible, so every
-                // submission "succeeded" client-side even when the backend failed.
-                if (result.status !== "success") {
-                    throw new Error(result.message || "Apps Script reported an error");
-                }
 
                 const newOrder = { customerName, phoneNumber, orderId };
                 localOrders.unshift(newOrder);
                 localStorage.setItem('ar_orders', JSON.stringify(localOrders));
-
+                
                 renderTable();
                 document.getElementById('orderForm').reset();
                 generateOrderID();
                 showQR(orderId);
 
             } catch (err) {
-                // FIX: this will now show REAL failure reasons (bad folder ID,
-                // permission error, stale deployment, etc.) instead of never firing.
-                alert("Submission failed: " + err.message + "\n\nCheck: (1) the Apps Script is deployed as a NEW version after any edits, (2) deployment access is set to 'Anyone', (3) the script owner has edit access to the target Drive folder and Sheet.");
-                console.error(err);
+                alert("Submission workflow error: " + err.message);
             } finally {
                 btn.disabled = false;
                 btn.innerText = "✨ Add Order & Generate QR";
@@ -224,9 +203,9 @@
         function showQR(orderId) {
             document.getElementById('qrcode').innerHTML = "";
             document.getElementById('modalTitle').innerText = `QR Code for ${orderId}`;
-
+            
             const scanUrl = `${AR_CLIENT_BASE_URL}?order=${orderId}`;
-
+            
             new QRCode(document.getElementById("qrcode"), {
                 text: scanUrl,
                 width: 180,
